@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gesture Recognizer</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lobster+Two&display=swap" rel="stylesheet">
+
+    <script src="https://unpkg.com/ml5@0.4.3/dist/ml5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.js"></script>
+</head>
+<body style="background-color:brown;">
+    <div class="container">
+        <center>
+        <h1 class="btn btn-warning" style="font-size: 40px;">GESTURE RECOGNIZER<br>
+            <span>&#9996;</span>
+            <span>&#128076</span>
+            <span>&#128077;</span>
+        </h1>
+        <br><br>
+        <p class="text-capitalize" style="color:white;font-size:large;">Take image of gesture to generate emoji</p>
+        <br><br>
+        <div>
+            
+            <label style="float:left;color:black;font-size:large;margin-left:125px;"><b>Camera - </b></label>
+            <label style="color:black;font-size:large;margin-bottom:20px;"><b>Prediction - </b></label>
+            
+            <label style="float:right;color:black;font-size:large;margin-right:125px;margin-bottom:-20px;"><b>Snapshot - </b></label>
+            <br><br><br>
+            <div id="camera" style="border-style:dashed;border-color:black;border-width:2;width:350px;height:300px;float:left;;box-shadow:10px 10px 40px blue,-10px -10px 40px blueviolet;background-color: cadetblue;">
+            </div>
+            <div id="prediction" style="border-style:dashed;border-color:black;border-width:2;width:350px;height:300px;"></div>
+            <div id="result" style="border-style:dashed;border-color:black;border-width:2;width:350px;height:300px;float:right;;box-shadow:10px 10px 40px blue,-10px -10px 40px blueviolet;background-color: cadetblue;margin-top:-26.25%">
+            </div><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+            <b style="color:black;float:left;margin-left:65px;">Please press T to take snapshot</b>
+            <b style="color:black;float:right;margin-right:60px;">Please press I key to identify snapshot</b>
+            <br><br><br>
+        </div>
+    </center>
+    </div>
+</body>
+<script>
+    camera=document.getElementById("camera");
+    Webcam.attach('#camera');
+    Webcam.set({
+        width:449,
+        height:249,
+        image_format:'jpg',
+        jpg_quality:99
+    });
+
+    window.addEventListener("keydown",MyKeydown);
+    function MyKeydown(e){
+        var keypressed=e.keyCode;
+        console.log(keypressed);
+        if(keypressed=='84'){
+            TakeSnapshot();
+        }
+        if(keypressed=='73'){
+            check();
+        }
+    }
+    function TakeSnapshot(){
+        Webcam.snap(function(data_uri){
+            document.getElementById("result").innerHTML="<img id='CapturedImage' src="+data_uri+">";
+        })
+    }
+    console.log("ml5 version: "+ml5.version);
+    classifier=ml5.imageClassifier("https://teachablemachine.withgoogle.com/models/76YAVlk1y/model.json",modelLoaded);
+    function modelLoaded(){
+        console.log("Model Has Been Loaded!");
+    }
+    function check(){
+        img=document.getElementById("CapturedImage");
+        classifier.classify(img, gotResult);
+    }
+    function gotResult(error, results){
+        if(error){
+            console.error("ERROR!");
+            console.error("Sorry, an error in the code is causing the app process to fail, please reload the page and try again")
+        }else{
+            var gestureImage="";
+            console.log(results);
+            if(results[0].label=="Amazing"){gestureImage="&#128076;"
+            }else if(results[0].label="Victory"){gestureImage="&#9996;"
+            }else{
+                gestureImage="&#128077";
+            }
+            document.getElementById("prediction").innerHTML="<label style='font-size:30px;color:black'><b>"+results[0].label+"</b></label><p style='font-size:200px;'>"+gestureImage+"</p>";
+        }
+        var speakingthis=results[0].label;
+        function speak(){
+        var synth=window.speechSynthesis;
+        var speak_data=speakingthis;
+        console.log(speak_data);
+        var utterThis=new SpeechSynthesisUtterance(speak_data);
+        synth.speak(utterThis);
+    }
+    speak();
+    }
+    
+</script>
+</html>
